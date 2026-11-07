@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=240, height=320, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketMap 240x320</title>
+  <!-- Leaflet CSS via CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    /* Strict 240x320 QVGA Box Model & Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 240px;
+      height: 320px;
+      max-width: 240px;
+      max-height: 320px;
+      overflow: hidden;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
+      font-size: 11px;
+      line-height: 1.2;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Main Container (Strictly 240x320) */
+    #phone-screen {
+      position: relative;
+      width: 240px;
+      height: 320px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #000000;
+    }
+
+    /* 1. Top Bar: Exactly 20px high */
+    #top-bar {
+      width: 240px;
+      height: 20px;
+      min-height: 20px;
+      max-height: 20px;
+      background: #111111;
+      border-bottom: 1px solid #2d2d2d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #00e5ff;
+      letter-spacing: -0.2px;
+      z-index: 1000;
+    }
+
+    #top-bar .zoom-badge {
+      background: #222222;
+      color: #ffd600;
+      padding: 1px 3px;
+      border-radius: 2px;
+      border: 1px solid #444444;
+      font-family: monospace;
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+
+    #top-bar .location-title {
+      max-width: 175px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #ffffff;
+      text-align: right;
+      font-size: 10px;
+    }
+
+    /* 2. Map Area: Exactly 280px high */
+    #map-container {
+      position: relative;
+      width: 240px;
+      height: 280px;
+      min-height: 280px;
+      max-height: 280px;
+      background: #e5e3df;
+      overflow: hidden;
+    }
+
+    #map {
+      width: 240px;
+      height: 280px;
+      background-color: #e5e3df;
+    }
+
+    /* Clean UI: Strip default Leaflet zoom and attribution */
+    .leaflet-control-container .leaflet-top,
+    .leaflet-control-container .leaflet-bottom {
+      display: none !important;
+    }
+
+    /* High-Contrast Center Crosshair Indicator */
+    #center-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 24px;
+      height: 24px;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Custom Waypoint Markers A and B */
+    .waypoint-pin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: 11px;
+      font-family: monospace;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 4px rgba(0,0,0,0.85);
+    }
+    .waypoint-pin.pin-a {
+      background: #00e676;
+      color: #000000;
+    }
+    .waypoint-pin.pin-b {
+      background: #ff1744;
+      color: #ffffff;
+    }
+
+    /* Toast Notification for quick feedback on keypad */
+    #toast {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 10, 10, 0.94);
+      color: #00e5ff;
+      border: 1px solid #00e5ff;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 1001;
+      opacity: 0;
+      transition: opacity 0.18s ease-in-out;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #toast.show {
+      opacity: 1;
+    }
+
+    /* Active Route Floating Bar (over map) */
+    #active-route-pill {
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.88);
+      border: 1px solid #00e5ff;
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 9px;
+      color: #00e5ff;
+      font-weight: bold;
+      z-index: 998;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+    #active-route-pill.show {
+      display: flex;
+    }
+
+    /* 3. Bottom Soft Key Legend: Exactly 20px high */
+    #bottom-bar {
+      width: 240px;
+      height: 20px;
+      min-height: 20px;
+      max-height: 20px;
+      background: #111111;
+      border-top: 1px solid #2d2d2d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #ffffff;
+      z-index: 1000;
+    }
+
+    .soft-key-label {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+    }
+
+    .soft-key-badge {
+      background: #252525;
+      color: #00e5ff;
+      font-size: 9px;
+      padding: 0 3px;
+      border-radius: 2px;
+      border: 1px solid #3d3d3d;
+      font-family: monospace;
+    }
+
+    .soft-key-center {
+      color: #ffd600;
+    }
+
+    .soft-key-right {
+      color: #ff5252;
+    }
+
+    /* Modals & Overlays (fitted within the 240x280 map viewport) */
+    .overlay-view {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      width: 240px;
+      height: 280px;
+      background: rgba(8, 8, 8, 0.97);
+      z-index: 1050;
+      display: none;
+      flex-direction: column;
+      padding: 6px;
+      color: #ffffff;
+    }
+
+    .overlay-view.active {
+      display: flex;
+    }
+
+    .overlay-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: #00e5ff;
+      border-bottom: 1px solid #333333;
+      padding-bottom: 3px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .overlay-content {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 10px;
+      line-height: 1.3;
+    }
+
+    /* Search & Route inputs */
+    .input-field {
+      width: 100%;
+      height: 23px;
+      background: #1c1c1c;
+      border: 1px solid #00e5ff;
+      color: #ffffff;
+      font-size: 10px;
+      padding: 2px 6px;
+      margin-bottom: 4px;
+      border-radius: 2px;
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: #ffd600;
+      background: #242424;
+    }
+
+    .action-btn {
+      width: 100%;
+      height: 22px;
+      background: #00838f;
+      color: #ffffff;
+      border: none;
+      border-radius: 2px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .action-btn:active {
+      background: #00acc1;
+    }
+    .action-btn.secondary {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #ddd;
+    }
+    .action-btn.danger {
+      background: #b71c1c;
+    }
+
+    .quick-list-title {
+      font-size: 9px;
+      color: #888888;
+      text-transform: uppercase;
+      margin-top: 3px;
+      margin-bottom: 2px;
+    }
+
+    .preset-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-bottom: 5px;
+    }
+
+    .preset-chip {
+      background: #222222;
+      border: 1px solid #444444;
+      color: #dddddd;
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .preset-chip:active {
+      background: #00e5ff;
+      color: #000000;
+    }
+
+    .search-results-list {
+      margin-top: 3px;
+    }
+
+    .result-item {
+      padding: 4px;
+      border-bottom: 1px solid #222222;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    .result-item:hover, .result-item.selected {
+      background: #00363a;
+      color: #80deea;
+    }
+
+    /* Details Card & Route Metrics Card */
+    .detail-card {
+      background: #181818;
+      border: 1px solid #333333;
+      border-radius: 3px;
+      padding: 5px 6px;
+      margin-bottom: 5px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+      font-size: 10px;
+    }
+    .detail-label {
+      color: #888888;
+    }
+    .detail-value {
+      color: #ffffff;
+      font-family: monospace;
+      font-weight: 600;
+    }
+
+    .pin-status-badge {
+      display: inline-block;
+      background: #c62828;
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: bold;
+      padding: 1px 4px;
+      border-radius: 2px;
+      margin-bottom: 5px;
+    }
+
+    /* Route Selector Tabs */
+    .route-tabs {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 5px;
+    }
+    .route-tab-btn {
+      flex: 1;
+      height: 22px;
+      background: #222;
+      border: 1px solid #444;
+      color: #bbb;
+      font-size: 9px;
+      font-weight: bold;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .route-tab-btn.active {
+      background: #00838f;
+      border-color: #00e5ff;
+      color: #fff;
+    }
+
+    /* Turn by turn steps list */
+    .step-item {
+      padding: 3px 0;
+      border-bottom: 1px solid #222;
+      font-size: 9px;
+      display: flex;
+      gap: 4px;
+    }
+    .step-num {
+      color: #ffd600;
+      font-family: monospace;
+      font-weight: bold;
+      min-width: 14px;
+    }
+    .step-text {
+      flex: 1;
+      color: #eee;
+    }
+    .step-dist {
+      color: #80deea;
+      font-family: monospace;
+      white-space: nowrap;
+    }
+
+    .nav-guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9px;
+      margin-top: 3px;
+    }
+    .nav-guide-table td {
+      padding: 2px 1px;
+      border-bottom: 1px solid #202020;
+    }
+    .nav-guide-table td.key-col {
+      color: #ffd600;
+      font-weight: bold;
+      width: 52px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Strict 240x320 Screen Container -->
+  <div id="phone-screen">
+    
+    <!-- 1. Top Bar: 20px high -->
+    <header id="top-bar">
+      <span class="zoom-badge" id="zoom-indicator">Z: 13</span>
+      <span class="location-title" id="location-indicator">51.5074°N, 0.1278°W</span>
+    </header>
+
+    <!-- 2. Map Area: 280px high -->
+    <main id="map-container">
+      <div id="map"></div>
+
+      <!-- High-contrast Center Crosshair Indicator -->
+      <svg id="center-crosshair" viewBox="0 0 24 24" width="24" height="24">
+        <!-- Contrast shadow outer ring -->
+        <circle cx="12" cy="12" r="7.5" fill="none" stroke="#000000" stroke-width="2.5" opacity="0.7"/>
+        <circle cx="12" cy="12" r="7.5" fill="none" stroke="#00e5ff" stroke-width="1.2"/>
+        <!-- 4 Crosshair target ticks -->
+        <line x1="12" y1="1" x2="12" y2="6.5" stroke="#000000" stroke-width="2.5"/>
+        <line x1="12" y1="1" x2="12" y2="6.5" stroke="#ff1744" stroke-width="1.5"/>
+        <line x1="12" y1="17.5" x2="12" y2="23" stroke="#000000" stroke-width="2.5"/>
+        <line x1="12" y1="17.5" x2="12" y2="23" stroke="#ff1744" stroke-width="1.5"/>
+        <line x1="1" y1="12" x2="6.5" y2="12" stroke="#000000" stroke-width="2.5"/>
+        <line x1="1" y1="12" x2="6.5" y2="12" stroke="#ff1744" stroke-width="1.5"/>
+        <line x1="17.5" y1="12" x2="23" y2="12" stroke="#000000" stroke-width="2.5"/>
+        <line x1="17.5" y1="12" x2="23" y2="12" stroke="#ff1744" stroke-width="1.5"/>
+        <!-- Center pinpoint dot -->
+        <circle cx="12" cy="12" r="2.2" fill="#ff1744" stroke="#ffffff" stroke-width="0.8"/>
+      </svg>
+
+      <!-- Active Route Pill Banner -->
+      <div id="active-route-pill">
+        <span id="route-pill-icon">&#9658;</span>
+        <span id="route-pill-summary">A &rarr; B: 0 km</span>
+      </div>
+
+      <!-- Toast Feedback Popup -->
+      <div id="toast">Marker Placed</div>
+    </main>
+
+    <!-- Search Overlay Dialog (Key '7' / SoftLeft) -->
+    <div id="search-modal" class="overlay-view">
+      <div class="overlay-header">
+        <span>SEARCH DESTINATION</span>
+        <span style="font-size: 9px; color: #888;">[7] CLOSE</span>
+      </div>
+      <div class="overlay-content">
+        <input type="text" id="search-input" class="input-field" placeholder="City or location..." autocomplete="off" autocapitalize="off" spellcheck="false" />
+        <button type="button" class="action-btn" id="search-submit-btn">Search & Pin [Enter]</button>
+
+        <div class="quick-list-title">Quick Jump / Destination:</div>
+        <div class="preset-chip-list">
+          <button type="button" class="preset-chip" data-lat="51.5074" data-lon="-0.1278" data-name="London">London</button>
+          <button type="button" class="preset-chip" data-lat="51.5007" data-lon="-0.1246" data-name="Big Ben">Big Ben</button>
+          <button type="button" class="preset-chip" data-lat="51.5033" data-lon="-0.1195" data-name="London Eye">London Eye</button>
+          <button type="button" class="preset-chip" data-lat="51.5081" data-lon="-0.0759" data-name="Tower of London">Tower Bridge</button>
+          <button type="button" class="preset-chip" data-lat="40.7128" data-lon="-74.0060" data-name="New York">New York</button>
+          <button type="button" class="preset-chip" data-lat="48.8566" data-lon="2.3522" data-name="Paris">Paris</button>
+        </div>
+
+        <button type="button" class="action-btn secondary" id="btn-goto-route-from-search" style="margin-top: 4px;">&rarr; Open Route Planner [9]</button>
+
+        <div id="search-status" style="font-size: 9px; color: #aaa; margin-top: 3px;">Press [Enter] to submit search.</div>
+        <div id="search-results-box" class="search-results-list"></div>
+      </div>
+    </div>
+
+    <!-- Location Details Overlay Dialog (Key '5' / Enter) -->
+    <div id="details-modal" class="overlay-view">
+      <div class="overlay-header">
+        <span>LOCATION DETAILS</span>
+        <span style="font-size: 9px; color: #888;">[5] CLOSE</span>
+      </div>
+      <div class="overlay-content">
+        <span class="pin-status-badge">PIN MARKER DROPPED</span>
+        
+        <div class="detail-card">
+          <div class="detail-row">
+            <span class="detail-label">Latitude:</span>
+            <span class="detail-value" id="detail-lat">51.50740</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Longitude:</span>
+            <span class="detail-value" id="detail-lon">-0.12780</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Zoom Level:</span>
+            <span class="detail-value" id="detail-zoom">13</span>
+          </div>
+          <div class="detail-row" style="flex-direction: column; gap: 2px; margin-top: 3px;">
+            <span class="detail-label">Address / Place:</span>
+            <span class="detail-value" id="detail-address" style="color: #80deea; font-size: 9px; font-family: sans-serif;">Resolving address...</span>
+          </div>
+        </div>
+
+        <div class="quick-list-title">Set as Route Waypoint:</div>
+        <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+          <button type="button" class="action-btn" id="btn-set-pin-a" style="background: #00796b;">Set as FROM (A)</button>
+          <button type="button" class="action-btn" id="btn-set-pin-b" style="background: #c2185b;">Set as TO (B)</button>
+        </div>
+
+        <button type="button" class="action-btn" id="btn-calc-route-from-details" style="background: #0288d1; margin-bottom: 6px;">Get Route A &rarr; B</button>
+
+        <div class="quick-list-title">Keypad Shortcuts:</div>
+        <table class="nav-guide-table">
+          <tr><td class="key-col">D-Pad</td><td>Pan Map (40px)</td></tr>
+          <tr><td class="key-col">Key 1 / 3</td><td>Zoom In / Out</td></tr>
+          <tr><td class="key-col">Key 5</td><td>Details / Waypoints</td></tr>
+          <tr><td class="key-col">Key 7</td><td>Search Location</td></tr>
+          <tr><td class="key-col">Key 9</td><td>To/From Route Planner</td></tr>
+          <tr><td class="key-col">Key 0</td><td>Reset / Clear</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4. Route (A -> B) Overlay Dialog (Key '9') -->
+    <div id="route-modal" class="overlay-view">
+      <div class="overlay-header">
+        <span>ROUTE PLANNER (A &rarr; B)</span>
+        <span style="font-size: 9px; color: #888;">[9] CLOSE</span>
+      </div>
+      <div class="overlay-content">
+        
+        <!-- From (A) Point Selection -->
+        <div style="margin-bottom: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
+            <span style="font-weight: bold; color: #00e676; font-size: 10px;">FROM (Start A):</span>
+            <button type="button" id="btn-use-crosshair-a" class="preset-chip" style="color:#00e676;">Use Crosshair</button>
+          </div>
+          <input type="text" id="route-from-input" class="input-field" placeholder="Origin (e.g. London)" />
+        </div>
+
+        <!-- To (B) Point Selection -->
+        <div style="margin-bottom: 5px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
+            <span style="font-weight: bold; color: #ff5252; font-size: 10px;">TO (Destination B):</span>
+            <button type="button" id="btn-use-crosshair-b" class="preset-chip" style="color:#ff5252;">Use Crosshair</button>
+          </div>
+          <input type="text" id="route-to-input" class="input-field" placeholder="Destination (e.g. Big Ben)" />
+        </div>
+
+        <div style="display: flex; gap: 4px; margin-bottom: 5px;">
+          <button type="button" class="action-btn" id="btn-find-routes" style="flex: 2;">Find Routes [Enter]</button>
+          <button type="button" class="action-btn secondary" id="btn-swap-waypoints" style="flex: 1;" title="Swap A and B">&#8646; Swap</button>
+        </div>
+
+        <!-- Route Results Area -->
+        <div id="route-results-container" style="display: none;">
+          <div class="quick-list-title">Possible Routes:</div>
+          <!-- Route Alternative Tabs (Route 1, Route 2, etc.) -->
+          <div id="route-tabs-bar" class="route-tabs"></div>
+
+          <div class="detail-card" id="route-summary-card">
+            <div class="detail-row">
+              <span class="detail-label">Distance:</span>
+              <span class="detail-value" id="route-val-distance" style="color:#00e5ff;">--</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Est. Time:</span>
+              <span class="detail-value" id="route-val-time" style="color:#ffd600;">--</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Via:</span>
+              <span class="detail-value" id="route-val-via" style="font-size:9px; font-family:sans-serif;">--</span>
+            </div>
+          </div>
+
+          <button type="button" class="action-btn secondary" id="btn-toggle-steps">Show Turn Steps &darr;</button>
+          <div id="route-steps-box" style="display: none; margin-top: 4px; max-height: 85px; overflow-y: auto;"></div>
+
+          <button type="button" class="action-btn danger" id="btn-clear-route" style="margin-top: 4px;">Clear Route</button>
+        </div>
+
+        <div id="route-status" style="font-size: 9px; color: #888; margin-top: 4px;">Enter origin & destination, or tap 'Use Crosshair'</div>
+      </div>
+    </div>
+
+    <!-- 5. Bottom Soft Key Legend: 20px high -->
+    <footer id="bottom-bar">
+      <div class="soft-key-label" id="btn-softkey-left">
+        <span class="soft-key-badge">7</span>
+        <span>Search</span>
+      </div>
+      <div class="soft-key-label soft-key-center" id="btn-softkey-route">
+        <span class="soft-key-badge" style="color:#ffd600;">9</span>
+        <span>Route</span>
+      </div>
+      <div class="soft-key-label soft-key-right" id="btn-softkey-right">
+        <span>Exit</span>
+        <span class="soft-key-badge" style="color: #ff5252;">RSK</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Leaflet JS via CDN -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // 1. Initial Default Coordinates (London)
+      const DEFAULT_LAT = 51.5074;
+      const DEFAULT_LON = -0.1278;
+      const DEFAULT_ZOOM = 13;
+      const PAN_STEP = 40; // 40px pan step as specified
+
+      // State for Waypoints and Routing
+      let waypointA = { lat: DEFAULT_LAT, lon: DEFAULT_LON, name: "London" };
+      let waypointB = null;
+      let markerA = null;
+      let markerB = null;
+      let activeRouteLines = []; // Array of polyline layers
+      let currentRoutesData = []; // Returned routes from OSRM
+      let selectedRouteIndex = 0;
+
+      // DOM Elements
+      const zoomIndicator = document.getElementById('zoom-indicator');
+      const locationIndicator = document.getElementById('location-indicator');
+      const searchModal = document.getElementById('search-modal');
+      const detailsModal = document.getElementById('details-modal');
+      const routeModal = document.getElementById('route-modal');
+      const searchInput = document.getElementById('search-input');
+      const searchSubmitBtn = document.getElementById('search-submit-btn');
+      const searchStatus = document.getElementById('search-status');
+      const searchResultsBox = document.getElementById('search-results-box');
+      const toastEl = document.getElementById('toast');
+      const activeRoutePill = document.getElementById('active-route-pill');
+      const routePillSummary = document.getElementById('route-pill-summary');
+
+      // Detail Modal DOM
+      const detailLat = document.getElementById('detail-lat');
+      const detailLon = document.getElementById('detail-lon');
+      const detailZoom = document.getElementById('detail-zoom');
+      const detailAddress = document.getElementById('detail-address');
+      const btnSetPinA = document.getElementById('btn-set-pin-a');
+      const btnSetPinB = document.getElementById('btn-set-pin-b');
+      const btnCalcRouteFromDetails = document.getElementById('btn-calc-route-from-details');
+
+      // Route Modal DOM
+      const routeFromInput = document.getElementById('route-from-input');
+      const routeToInput = document.getElementById('route-to-input');
+      const btnUseCrosshairA = document.getElementById('btn-use-crosshair-a');
+      const btnUseCrosshairB = document.getElementById('btn-use-crosshair-b');
+      const btnFindRoutes = document.getElementById('btn-find-routes');
+      const btnSwapWaypoints = document.getElementById('btn-swap-waypoints');
+      const routeResultsContainer = document.getElementById('route-results-container');
+      const routeTabsBar = document.getElementById('route-tabs-bar');
+      const routeValDistance = document.getElementById('route-val-distance');
+      const routeValTime = document.getElementById('route-val-time');
+      const routeValVia = document.getElementById('route-val-via');
+      const btnToggleSteps = document.getElementById('btn-toggle-steps');
+      const routeStepsBox = document.getElementById('route-steps-box');
+      const btnClearRoute = document.getElementById('btn-clear-route');
+      const routeStatus = document.getElementById('route-status');
+
+      // Bottom Bar Soft Keys
+      const btnSoftLeft = document.getElementById('btn-softkey-left');
+      const btnSoftRoute = document.getElementById('btn-softkey-route');
+      const btnSoftRight = document.getElementById('btn-softkey-right');
+      const btnGotoRouteFromSearch = document.getElementById('btn-goto-route-from-search');
+
+      let currentPinMarker = null;
+      let toastTimer = null;
+      let activePlaceName = "";
+
+      // 2. Initialize Leaflet Map strictly optimized for 240x280 Canvas
+      const map = L.map('map', {
+        center: [DEFAULT_LAT, DEFAULT_LON],
+        zoom: DEFAULT_ZOOM,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        touchZoom: false,
+        doubleClickZoom: false,
+        scrollWheelZoom: false,
+        boxZoom: false,
+        keyboard: false
+      });
+
+      // OpenStreetMap Tile Layer
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        minZoom: 2,
+        updateWhenIdle: true,
+        keepBuffer: 2
+      }).addTo(map);
+
+      // Force accurate dimensions calculation in CloudMosa headless browser
+      setTimeout(function () {
+        map.invalidateSize();
+      }, 150);
+
+      // Helper: Format coordinates
+      function formatCoords(lat, lon) {
+        const latStr = Math.abs(lat).toFixed(4) + (lat >= 0 ? '°N' : '°S');
+        const lonStr = Math.abs(lon).toFixed(4) + (lon >= 0 ? '°E' : '°W');
+        return latStr + ', ' + lonStr;
+      }
+
+      // Show brief on-screen toast
+      function showToast(message) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastEl.textContent = message;
+        toastEl.classList.add('show');
+        toastTimer = setTimeout(function () {
+          toastEl.classList.remove('show');
+        }, 1700);
+      }
+
+      // Update Top Bar Indicators
+      function updateHeaderInfo() {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        zoomIndicator.textContent = 'Z: ' + zoom;
+        if (activePlaceName) {
+          locationIndicator.textContent = activePlaceName;
+        } else {
+          locationIndicator.textContent = formatCoords(center.lat, center.lng);
+        }
+      }
+
+      // Map event listeners
+      map.on('move', function () {
+        activePlaceName = "";
+        updateHeaderInfo();
+      });
+
+      map.on('zoomend', function () {
+        updateHeaderInfo();
+      });
+
+      updateHeaderInfo();
+
+      // 3. Pin & Waypoint Marker Management
+      function createDivIcon(text, className) {
+        return L.divIcon({
+          className: 'custom-div-icon',
+          html: '<div class="waypoint-pin ' + className + '">' + text + '</div>',
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        });
+      }
+
+      function placeMarkerAtCenter() {
+        const center = map.getCenter();
+        if (currentPinMarker) {
+          currentPinMarker.setLatLng(center);
+        } else {
+          currentPinMarker = L.marker(center, {
+            interactive: false
+          }).addTo(map);
+        }
+        showToast('Marker Placed');
+      }
+
+      function updateWaypointMarkers() {
+        if (waypointA) {
+          if (!markerA) {
+            markerA = L.marker([waypointA.lat, waypointA.lon], {
+              icon: createDivIcon('A', 'pin-a'),
+              zIndexOffset: 500
+            }).addTo(map);
+          } else {
+            markerA.setLatLng([waypointA.lat, waypointA.lon]);
+          }
+        } else if (markerA) {
+          map.removeLayer(markerA);
+          markerA = null;
+        }
+
+        if (waypointB) {
+          if (!markerB) {
+            markerB = L.marker([waypointB.lat, waypointB.lon], {
+              icon: createDivIcon('B', 'pin-b'),
+              zIndexOffset: 500
+            }).addTo(map);
+          } else {
+            markerB.setLatLng([waypointB.lat, waypointB.lon]);
+          }
+        } else if (markerB) {
+          map.removeLayer(markerB);
+          markerB = null;
+        }
+      }
+
+      // Reverse Geocoding with OpenStreetMap Nominatim
+      function fetchAddressDetails(lat, lon, callback) {
+        const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+          encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon) + '&zoom=16&addressdetails=1';
+
+        fetch(url)
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data && data.display_name) {
+              const parts = data.display_name.split(',');
+              const shortTitle = (parts[0] || '').trim() + (parts[1] ? ', ' + parts[1].trim() : '');
+              if (callback) callback(shortTitle, data.display_name);
+            } else {
+              if (callback) callback(formatCoords(lat, lon), 'Location: ' + formatCoords(lat, lon));
+            }
+          })
+          .catch(function () {
+            if (callback) callback(formatCoords(lat, lon), 'Coordinates: ' + formatCoords(lat, lon));
+          });
+      }
+
+      // 4. Modal Overlays
+      function closeAllModals() {
+        searchModal.classList.remove('active');
+        detailsModal.classList.remove('active');
+        routeModal.classList.remove('active');
+        searchInput.blur();
+        routeFromInput.blur();
+        routeToInput.blur();
+        window.focus();
+      }
+
+      function openDetailsModal() {
+        closeAllModals();
+        placeMarkerAtCenter();
+        const center = map.getCenter();
+        detailLat.textContent = center.lat.toFixed(5);
+        detailLon.textContent = center.lng.toFixed(5);
+        detailZoom.textContent = map.getZoom();
+        detailAddress.textContent = 'Looking up address...';
+        detailsModal.classList.add('active');
+
+        fetchAddressDetails(center.lat, center.lng, function (shortTitle, fullTitle) {
+          detailAddress.textContent = fullTitle;
+          activePlaceName = shortTitle;
+          updateHeaderInfo();
+        });
+      }
+
+      function openSearchModal() {
+        closeAllModals();
+        searchModal.classList.add('active');
+        searchStatus.textContent = 'Type location and press [Enter]';
+        setTimeout(function () {
+          searchInput.focus();
+        }, 80);
+      }
+
+      function openRouteModal() {
+        closeAllModals();
+        routeModal.classList.add('active');
+
+        // Populate inputs if values exist
+        if (waypointA) {
+          routeFromInput.value = waypointA.name || formatCoords(waypointA.lat, waypointA.lon);
+        } else {
+          const center = map.getCenter();
+          routeFromInput.value = formatCoords(center.lat, center.lng);
+        }
+
+        if (waypointB) {
+          routeToInput.value = waypointB.name || formatCoords(waypointB.lat, waypointB.lon);
+        }
+
+        setTimeout(function () {
+          if (!routeToInput.value) {
+            routeToInput.focus();
+          } else {
+            routeFromInput.focus();
+          }
+        }, 80);
+      }
+
+      // Jump to coordinates
+      function jumpToLocation(lat, lon, label) {
+        map.setView([lat, lon], 14, { animate: false });
+        activePlaceName = label || "";
+        updateHeaderInfo();
+        placeMarkerAtCenter();
+        closeAllModals();
+      }
+
+      // 5. Geocoding & Waypoint assignment
+      function resolveLocationQuery(query, callback) {
+        if (!query || !query.trim()) {
+          callback(null);
+          return;
+        }
+        // Check if query is lat,lon formatted
+        const match = query.match(/^([-+]?\d{1,2}(?:\.\d+)?)[,\s]+([-+]?\d{1,3}(?:\.\d+)?)$/);
+        if (match) {
+          callback({
+            lat: parseFloat(match[1]),
+            lon: parseFloat(match[2]),
+            name: formatCoords(parseFloat(match[1]), parseFloat(match[2]))
+          });
+          return;
+        }
+
+        const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query);
+        fetch(url)
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data && data.length > 0) {
+              callback({
+                lat: parseFloat(data[0].lat),
+                lon: parseFloat(data[0].lon),
+                name: data[0].display_name.split(',')[0]
+              });
+            } else {
+              callback(null);
+            }
+          })
+          .catch(function () {
+            callback(null);
+          });
+      }
+
+      // Search dialog search execution
+      function executeSearch() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        searchStatus.textContent = 'Searching...';
+        searchResultsBox.innerHTML = '';
+
+        const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=4&q=' + encodeURIComponent(query);
+        fetch(url)
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (!data || data.length === 0) {
+              searchStatus.textContent = 'No results found.';
+              return;
+            }
+
+            searchStatus.textContent = 'Results (' + data.length + '):';
+            data.forEach(function (item) {
+              const btn = document.createElement('div');
+              btn.className = 'result-item';
+              btn.textContent = item.display_name.split(',').slice(0, 3).join(',');
+              btn.onclick = function () {
+                const lat = parseFloat(item.lat);
+                const lon = parseFloat(item.lon);
+                jumpToLocation(lat, lon, item.name || query);
+              };
+              searchResultsBox.appendChild(btn);
+            });
+
+            // Auto jump to top result
+            const topMatch = data[0];
+            jumpToLocation(parseFloat(topMatch.lat), parseFloat(topMatch.lon), topMatch.name || query);
+          })
+          .catch(function () {
+            searchStatus.textContent = 'Search failed (Network error)';
+          });
+      }
+
+      searchSubmitBtn.addEventListener('click', executeSearch);
+
+      // Preset quick jump chips
+      document.querySelectorAll('.preset-chip').forEach(function (chip) {
+        if (chip.getAttribute('data-lat')) {
+          chip.addEventListener('click', function () {
+            const lat = parseFloat(chip.getAttribute('data-lat'));
+            const lon = parseFloat(chip.getAttribute('data-lon'));
+            const name = chip.getAttribute('data-name');
+            jumpToLocation(lat, lon, name);
+          });
+        }
+      });
+
+      // Location details waypoint buttons
+      btnSetPinA.addEventListener('click', function () {
+        const center = map.getCenter();
+        waypointA = { lat: center.lat, lon: center.lng, name: activePlaceName || "Point A" };
+        updateWaypointMarkers();
+        showToast('Set as Origin (A)');
+      });
+
+      btnSetPinB.addEventListener('click', function () {
+        const center = map.getCenter();
+        waypointB = { lat: center.lat, lon: center.lng, name: activePlaceName || "Point B" };
+        updateWaypointMarkers();
+        showToast('Set as Destination (B)');
+      });
+
+      btnCalcRouteFromDetails.addEventListener('click', function () {
+        if (!waypointA) {
+          const center = map.getCenter();
+          waypointA = { lat: center.lat, lon: center.lng, name: "Point A" };
+        }
+        if (!waypointB) {
+          showToast('Select or set Destination (B)');
+          openRouteModal();
+          return;
+        }
+        openRouteModal();
+        requestRouteCalculation();
+      });
+
+      // Route dialog waypoint pickers
+      btnUseCrosshairA.addEventListener('click', function () {
+        const center = map.getCenter();
+        waypointA = { lat: center.lat, lon: center.lng, name: formatCoords(center.lat, center.lng) };
+        routeFromInput.value = waypointA.name;
+        updateWaypointMarkers();
+        showToast('Origin (A) Set to Crosshair');
+      });
+
+      btnUseCrosshairB.addEventListener('click', function () {
+        const center = map.getCenter();
+        waypointB = { lat: center.lat, lon: center.lng, name: formatCoords(center.lat, center.lng) };
+        routeToInput.value = waypointB.name;
+        updateWaypointMarkers();
+        showToast('Destination (B) Set to Crosshair');
+      });
+
+      btnSwapWaypoints.addEventListener('click', function () {
+        const temp = waypointA;
+        waypointA = waypointB;
+        waypointB = temp;
+        const tempVal = routeFromInput.value;
+        routeFromInput.value = routeToInput.value;
+        routeToInput.value = tempVal;
+        updateWaypointMarkers();
+        if (waypointA && waypointB) {
+          requestRouteCalculation();
+        }
+      });
+
+      btnGotoRouteFromSearch.addEventListener('click', function () {
+        openRouteModal();
+      });
+
+      // 6. ROUTE CALCULATION ENGINE (OSRM API + Alternatives)
+      function clearCurrentRoute() {
+        activeRouteLines.forEach(function (line) {
+          map.removeLayer(line);
+        });
+        activeRouteLines = [];
+        currentRoutesData = [];
+        routeResultsContainer.style.display = 'none';
+        activeRoutePill.classList.remove('show');
+        routeStatus.textContent = 'Route cleared.';
+        showToast('Route Cleared');
+      }
+
+      btnClearRoute.addEventListener('click', clearCurrentRoute);
+
+      function formatDistance(meters) {
+        if (meters >= 1000) {
+          return (meters / 1000).toFixed(1) + ' km';
+        }
+        return Math.round(meters) + ' m';
+      }
+
+      function formatDuration(seconds) {
+        if (seconds >= 3600) {
+          const h = Math.floor(seconds / 3600);
+          const m = Math.round((seconds % 3600) / 60);
+          return h + 'h ' + m + 'm';
+        }
+        return Math.max(1, Math.round(seconds / 60)) + ' min';
+      }
+
+      // Render the selected route polyline and update UI
+      function selectRoute(index) {
+        selectedRouteIndex = index;
+        const route = currentRoutesData[index];
+        if (!route) return;
+
+        // Update tabs active state
+        const tabBtns = routeTabsBar.querySelectorAll('.route-tab-btn');
+        tabBtns.forEach(function (btn, idx) {
+          if (idx === index) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        // Update Summary Card
+        routeValDistance.textContent = formatDistance(route.distance);
+        routeValTime.textContent = formatDuration(route.duration);
+        routeValVia.textContent = (route.legs && route.legs[0] && route.legs[0].summary) ? route.legs[0].summary : 'Direct Road';
+
+        // Update Top Bar and Floating Route Pill
+        const distStr = formatDistance(route.distance);
+        const timeStr = formatDuration(route.duration);
+        activePlaceName = 'A \u2192 B: ' + distStr + ' \u2022 ' + timeStr;
+        updateHeaderInfo();
+
+        routePillSummary.textContent = distStr + ' (' + timeStr + ')';
+        activeRoutePill.classList.add('show');
+
+        // Draw Polylines: primary route in bright cyan/blue, alternative routes in muted gray
+        activeRouteLines.forEach(function (l) { map.removeLayer(l); });
+        activeRouteLines = [];
+
+        // Draw alternative routes underneath in muted style
+        currentRoutesData.forEach(function (altRoute, altIdx) {
+          if (altIdx !== index && altRoute.geometry && altRoute.geometry.coordinates) {
+            const altLatLngs = altRoute.geometry.coordinates.map(function (c) {
+              return [c[1], c[0]];
+            });
+            const altLine = L.polyline(altLatLngs, {
+              color: '#607d8b',
+              weight: 3.5,
+              opacity: 0.65,
+              dashArray: '4, 4'
+            }).addTo(map);
+            activeRouteLines.push(altLine);
+          }
+        });
+
+        // Draw the selected active route with dual-layer high contrast
+        if (route.geometry && route.geometry.coordinates) {
+          const latLngs = route.geometry.coordinates.map(function (c) {
+            return [c[1], c[0]];
+          });
+
+          // Outer dark contrast border
+          const borderLine = L.polyline(latLngs, {
+            color: '#000000',
+            weight: 6,
+            opacity: 0.95
+          }).addTo(map);
+
+          // Inner glowing cyan core line
+          const coreLine = L.polyline(latLngs, {
+            color: '#00e5ff',
+            weight: 3.5,
+            opacity: 1.0
+          }).addTo(map);
+
+          activeRouteLines.push(borderLine);
+          activeRouteLines.push(coreLine);
+
+          // Fit bounds to fit the route on the 240x280 screen
+          map.fitBounds(coreLine.getBounds(), {
+            padding: [22, 22],
+            animate: false
+          });
+        }
+
+        // Populate Turn Steps
+        routeStepsBox.innerHTML = '';
+        if (route.legs && route.legs[0] && route.legs[0].steps && route.legs[0].steps.length > 0) {
+          route.legs[0].steps.forEach(function (step, sIdx) {
+            const stepRow = document.createElement('div');
+            stepRow.className = 'step-item';
+            const instruction = step.maneuver.type + (step.name ? ' on ' + step.name : '');
+            stepRow.innerHTML = '<span class="step-num">' + (sIdx + 1) + '.</span>' +
+              '<span class="step-text">' + instruction + '</span>' +
+              '<span class="step-dist">' + formatDistance(step.distance) + '</span>';
+            routeStepsBox.appendChild(stepRow);
+          });
+          btnToggleSteps.style.display = 'block';
+        } else {
+          btnToggleSteps.style.display = 'none';
+        }
+      }
+
+      // Straight-line Fallback (Haversine) if routing server is unreachable
+      function drawStraightLineFallback(p1, p2) {
+        const R = 6371e3; // Earth radius in meters
+        const rad1 = p1.lat * Math.PI / 180;
+        const rad2 = p2.lat * Math.PI / 180;
+        const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+        const dLon = (p2.lon - p1.lon) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(rad1) * Math.cos(rad2) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const dist = R * c;
+        const estSec = dist / 11; // ~40 km/h approx
+
+        currentRoutesData = [{
+          distance: dist,
+          duration: estSec,
+          legs: [{ summary: 'Direct Line' }],
+          geometry: {
+            coordinates: [[p1.lon, p1.lat], [p2.lon, p2.lat]]
+          }
+        }];
+
+        routeTabsBar.innerHTML = '<button type="button" class="route-tab-btn active">Direct Line</button>';
+        routeResultsContainer.style.display = 'block';
+        selectRoute(0);
+        routeStatus.textContent = 'Direct route connected.';
+        showToast('Direct Line: ' + formatDistance(dist));
+      }
+
+      // Fetch routes from OSRM
+      function requestRouteCalculation() {
+        routeStatus.textContent = 'Resolving locations...';
+
+        const fromQuery = routeFromInput.value.trim();
+        const toQuery = routeToInput.value.trim();
+
+        if (!fromQuery || !toQuery) {
+          routeStatus.textContent = 'Please enter both From and To points.';
+          showToast('Missing From or To');
+          return;
+        }
+
+        resolveLocationQuery(fromQuery, function (locA) {
+          if (!locA) {
+            routeStatus.textContent = 'Could not find origin location.';
+            showToast('Origin not found');
+            return;
+          }
+          waypointA = locA;
+          updateWaypointMarkers();
+
+          resolveLocationQuery(toQuery, function (locB) {
+            if (!locB) {
+              routeStatus.textContent = 'Could not find destination.';
+              showToast('Destination not found');
+              return;
+            }
+            waypointB = locB;
+            updateWaypointMarkers();
+
+            routeStatus.textContent = 'Calculating possible routes...';
+
+            // OSRM Public Routing API with alternatives=true and geometries=geojson
+            const osrmUrl = 'https://router.project-osrm.org/route/v1/driving/' +
+              waypointA.lon + ',' + waypointA.lat + ';' +
+              waypointB.lon + ',' + waypointB.lat +
+              '?overview=full&geometries=geojson&steps=true&alternatives=true';
+
+            fetch(osrmUrl)
+              .then(function (res) { return res.json(); })
+              .then(function (data) {
+                if (data && data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                  currentRoutesData = data.routes;
+                  routeStatus.textContent = 'Found ' + data.routes.length + ' possible route(s).';
+
+                  // Build Route Selector Tabs
+                  routeTabsBar.innerHTML = '';
+                  data.routes.forEach(function (r, idx) {
+                    const tabBtn = document.createElement('button');
+                    tabBtn.type = 'button';
+                    tabBtn.className = 'route-tab-btn' + (idx === 0 ? ' active' : '');
+                    tabBtn.textContent = 'Route ' + (idx + 1) + ' (' + formatDistance(r.distance) + ')';
+                    tabBtn.onclick = function () {
+                      selectRoute(idx);
+                    };
+                    routeTabsBar.appendChild(tabBtn);
+                  });
+
+                  routeResultsContainer.style.display = 'block';
+                  selectRoute(0);
+                  showToast('Route Ready (' + data.routes.length + ' found)');
+                  setTimeout(function () {
+                    closeAllModals();
+                  }, 800);
+                } else {
+                  // Fall back to direct line
+                  drawStraightLineFallback(waypointA, waypointB);
+                  setTimeout(function () { closeAllModals(); }, 800);
+                }
+              })
+              .catch(function () {
+                // If offline / network error, use straight line connection
+                drawStraightLineFallback(waypointA, waypointB);
+                setTimeout(function () { closeAllModals(); }, 800);
+              });
+          });
+        });
+      }
+
+      btnFindRoutes.addEventListener('click', requestRouteCalculation);
+
+      btnToggleSteps.addEventListener('click', function () {
+        if (routeStepsBox.style.display === 'none') {
+          routeStepsBox.style.display = 'block';
+          btnToggleSteps.textContent = 'Hide Turn Steps \u2191';
+        } else {
+          routeStepsBox.style.display = 'none';
+          btnToggleSteps.textContent = 'Show Turn Steps \u2193';
+        }
+      });
+
+      // Reset to Default Coordinates
+      function resetToDefault() {
+        clearCurrentRoute();
+        map.setView([DEFAULT_LAT, DEFAULT_LON], DEFAULT_ZOOM, { animate: false });
+        activePlaceName = "";
+        updateHeaderInfo();
+        showToast('Reset to Default');
+      }
+
+      // 7. KEYPAD & D-PAD NAVIGATION ENGINE
+      window.addEventListener('keydown', function (e) {
+        const key = e.key;
+        const code = e.keyCode || e.which;
+        const isSearchOpen = searchModal.classList.contains('active');
+        const isDetailsOpen = detailsModal.classList.contains('active');
+        const isRouteOpen = routeModal.classList.contains('active');
+        const isInputFocused = (
+          document.activeElement === searchInput ||
+          document.activeElement === routeFromInput ||
+          document.activeElement === routeToInput
+        );
+
+        // Key identification (normalizes strings, keyCodes, numpad codes)
+        const isKey1 = (key === '1' || code === 49 || code === 97);
+        const isKey3 = (key === '3' || code === 51 || code === 99);
+        const isKey5 = (key === '5' || code === 53 || code === 101);
+        const isKey7 = (key === '7' || code === 55 || code === 103);
+        const isKey9 = (key === '9' || code === 57 || code === 105);
+        const isKey0 = (key === '0' || code === 48 || code === 96);
+        const isEnter = (key === 'Enter' || key === 'Select' || key === 'Accept' || code === 13);
+        const isSoftLeft = (key === 'SoftLeft' || key === 'F1' || code === 112);
+        const isSoftRight = (key === 'SoftRight' || key === 'F2' || key === 'Escape' || code === 113 || code === 27);
+        const isUp = (key === 'ArrowUp' || key === 'Up' || code === 38);
+        const isDown = (key === 'ArrowDown' || key === 'Down' || code === 40);
+        const isLeft = (key === 'ArrowLeft' || key === 'Left' || code === 37);
+        const isRight = (key === 'ArrowRight' || key === 'Right' || code === 39);
+
+        // Handle Escape / SoftRight / RSK / Back
+        if (isSoftRight || (key === 'Backspace' && !isInputFocused)) {
+          if (isSearchOpen || isDetailsOpen || isRouteOpen) {
+            e.preventDefault();
+            closeAllModals();
+            return;
+          }
+          if (isSoftRight) {
+            e.preventDefault();
+            showToast('Exit');
+            try {
+              if (window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.close();
+              }
+            } catch (_) {}
+            return;
+          }
+        }
+
+        // When typing in text input fields
+        if (isInputFocused) {
+          if (isEnter) {
+            e.preventDefault();
+            if (isSearchOpen) {
+              executeSearch();
+            } else if (isRouteOpen) {
+              requestRouteCalculation();
+            }
+          }
+          return;
+        }
+
+        // Soft Left Key (F1 or Key 7)
+        if (isSoftLeft) {
+          e.preventDefault();
+          if (isSearchOpen) {
+            closeAllModals();
+          } else {
+            openSearchModal();
+          }
+          return;
+        }
+
+        // Prevent default browser viewport scrolling on D-Pad Arrow keys
+        if (isUp || isDown || isLeft || isRight) {
+          e.preventDefault();
+          if (isSearchOpen || isDetailsOpen || isRouteOpen) return;
+
+          if (isUp) {
+            map.panBy([0, -PAN_STEP], { animate: false }); // Pan North 40px
+          } else if (isDown) {
+            map.panBy([0, PAN_STEP], { animate: false });  // Pan South 40px
+          } else if (isLeft) {
+            map.panBy([-PAN_STEP, 0], { animate: false }); // Pan West 40px
+          } else if (isRight) {
+            map.panBy([PAN_STEP, 0], { animate: false });  // Pan East 40px
+          }
+          return;
+        }
+
+        // Key '1': Zoom in
+        if (isKey1) {
+          e.preventDefault();
+          if (isSearchOpen || isDetailsOpen || isRouteOpen) return;
+          map.zoomIn();
+          showToast('Zoom: ' + map.getZoom());
+          return;
+        }
+
+        // Key '3': Zoom out
+        if (isKey3) {
+          e.preventDefault();
+          if (isSearchOpen || isDetailsOpen || isRouteOpen) return;
+          map.zoomOut();
+          showToast('Zoom: ' + map.getZoom());
+          return;
+        }
+
+        // Key '5' or 'Enter': Location details / Pin
+        if (isKey5) {
+          e.preventDefault();
+          if (isDetailsOpen) {
+            closeAllModals();
+          } else {
+            openDetailsModal();
+          }
+          return;
+        }
+
+        if (isEnter) {
+          e.preventDefault();
+          if (isSearchOpen) {
+            executeSearch();
+          } else if (isRouteOpen) {
+            requestRouteCalculation();
+          } else if (isDetailsOpen) {
+            closeAllModals();
+          } else {
+            openDetailsModal();
+          }
+          return;
+        }
+
+        // Key '7': Search modal toggle
+        if (isKey7) {
+          e.preventDefault();
+          if (isSearchOpen) {
+            closeAllModals();
+          } else {
+            openSearchModal();
+          }
+          return;
+        }
+
+        // Key '9': Route planner modal toggle
+        if (isKey9) {
+          e.preventDefault();
+          if (isRouteOpen) {
+            closeAllModals();
+          } else {
+            openRouteModal();
+          }
+          return;
+        }
+
+        // Key '0': Reset map or clear
+        if (isKey0) {
+          e.preventDefault();
+          closeAllModals();
+          resetToDefault();
+          return;
+        }
+      }, { passive: false });
+
+      // Click Handlers for Soft Key Legend Buttons
+      btnSoftLeft.addEventListener('click', function () {
+        if (searchModal.classList.contains('active')) {
+          closeAllModals();
+        } else {
+          openSearchModal();
+        }
+      });
+
+      btnSoftRoute.addEventListener('click', function () {
+        if (routeModal.classList.contains('active')) {
+          closeAllModals();
+        } else {
+          openRouteModal();
+        }
+      });
+
+      btnSoftRight.addEventListener('click', function () {
+        if (searchModal.classList.contains('active') || detailsModal.classList.contains('active') || routeModal.classList.contains('active')) {
+          closeAllModals();
+        } else {
+          showToast('Exit');
+          try {
+            if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.close();
+            }
+          } catch (_) {}
+        }
+      });
+
+      // Prevent any touch scrolling on window
+      window.addEventListener('touchmove', function (e) {
+        if (!e.target.closest('.overlay-content')) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+    })();
+  </script>
+</body>
+</html>
