@@ -98,7 +98,7 @@
       background-color: #e5e3df;
     }
 
-    /* Clean UI: Strip default Leaflet zoom and attribution */
+    /* Performance: Strip default Leaflet UI */
     .leaflet-control-container .leaflet-top,
     .leaflet-control-container .leaflet-bottom {
       display: none !important;
@@ -139,7 +139,7 @@
       color: #ffffff;
     }
 
-    /* Toast Notification for quick feedback on keypad */
+    /* Toast Notification */
     #toast {
       position: absolute;
       bottom: 6px;
@@ -156,7 +156,7 @@
       pointer-events: none;
       z-index: 1001;
       opacity: 0;
-      transition: opacity 0.18s ease-in-out;
+      transition: opacity 0.15s ease-in-out;
       max-width: 220px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -232,18 +232,18 @@
       color: #ff5252;
     }
 
-    /* Modals & Overlays (fitted within the 240x280 map viewport) */
+    /* Modals & Overlays */
     .overlay-view {
       position: absolute;
       top: 20px;
       left: 0;
       width: 240px;
       height: 280px;
-      background: rgba(8, 8, 8, 0.97);
+      background: rgba(8, 8, 8, 0.98);
       z-index: 1050;
       display: none;
       flex-direction: column;
-      padding: 6px;
+      padding: 5px 6px;
       color: #ffffff;
     }
 
@@ -257,7 +257,7 @@
       color: #00e5ff;
       border-bottom: 1px solid #333333;
       padding-bottom: 3px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -267,7 +267,7 @@
       flex: 1;
       overflow-y: auto;
       font-size: 10px;
-      line-height: 1.3;
+      line-height: 1.25;
     }
 
     /* Search & Route inputs */
@@ -279,13 +279,14 @@
       color: #ffffff;
       font-size: 10px;
       padding: 2px 6px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       border-radius: 2px;
       outline: none;
     }
     .input-field:focus {
       border-color: #ffd600;
       background: #242424;
+      box-shadow: 0 0 3px #ffd600;
     }
 
     .action-btn {
@@ -298,14 +299,15 @@
       font-size: 10px;
       font-weight: bold;
       cursor: pointer;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 4px;
     }
-    .action-btn:active {
+    .action-btn:focus, .action-btn:active {
       background: #00acc1;
+      outline: 1px solid #ffd600;
     }
     .action-btn.secondary {
       background: #2a2a2a;
@@ -320,7 +322,7 @@
       font-size: 9px;
       color: #888888;
       text-transform: uppercase;
-      margin-top: 3px;
+      margin-top: 2px;
       margin-bottom: 2px;
     }
 
@@ -328,7 +330,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 3px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .preset-chip {
@@ -340,24 +342,23 @@
       border-radius: 2px;
       cursor: pointer;
     }
-    .preset-chip:active {
+    .preset-chip:focus, .preset-chip:active {
       background: #00e5ff;
       color: #000000;
-    }
-
-    .search-results-list {
-      margin-top: 3px;
+      border-color: #00e5ff;
+      outline: none;
     }
 
     .result-item {
-      padding: 4px;
+      padding: 3px 4px;
       border-bottom: 1px solid #222222;
       cursor: pointer;
       font-size: 10px;
     }
-    .result-item:hover, .result-item.selected {
+    .result-item:hover, .result-item.selected, .result-item:focus {
       background: #00363a;
       color: #80deea;
+      outline: none;
     }
 
     /* Details Card & Route Metrics Card */
@@ -365,8 +366,8 @@
       background: #181818;
       border: 1px solid #333333;
       border-radius: 3px;
-      padding: 5px 6px;
-      margin-bottom: 5px;
+      padding: 4px 5px;
+      margin-bottom: 4px;
     }
     .detail-row {
       display: flex;
@@ -391,18 +392,32 @@
       font-weight: bold;
       padding: 1px 4px;
       border-radius: 2px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
+    }
+
+    /* Route Box Container */
+    .waypoint-box {
+      margin-bottom: 4px;
+      background: #141414;
+      padding: 3px 5px;
+      border-radius: 2px;
+    }
+    .waypoint-box.box-a {
+      border-left: 3px solid #00e676;
+    }
+    .waypoint-box.box-b {
+      border-left: 3px solid #ff1744;
     }
 
     /* Route Selector Tabs */
     .route-tabs {
       display: flex;
       gap: 3px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
     .route-tab-btn {
       flex: 1;
-      height: 22px;
+      height: 20px;
       background: #222;
       border: 1px solid #444;
       color: #bbb;
@@ -411,7 +426,7 @@
       border-radius: 2px;
       cursor: pointer;
     }
-    .route-tab-btn.active {
+    .route-tab-btn:focus, .route-tab-btn.active {
       background: #00838f;
       border-color: #00e5ff;
       color: #fff;
@@ -419,7 +434,7 @@
 
     /* Turn by turn steps list */
     .step-item {
-      padding: 3px 0;
+      padding: 2px 0;
       border-bottom: 1px solid #222;
       font-size: 9px;
       display: flex;
@@ -512,20 +527,20 @@
         <input type="text" id="search-input" class="input-field" placeholder="City or location..." autocomplete="off" autocapitalize="off" spellcheck="false" />
         <button type="button" class="action-btn" id="search-submit-btn">Search & Pin [Enter]</button>
 
-        <div class="quick-list-title">Quick Jump / Destination:</div>
+        <div class="quick-list-title">Quick Destinations:</div>
         <div class="preset-chip-list">
-          <button type="button" class="preset-chip" data-lat="51.5074" data-lon="-0.1278" data-name="London">London</button>
-          <button type="button" class="preset-chip" data-lat="51.5007" data-lon="-0.1246" data-name="Big Ben">Big Ben</button>
-          <button type="button" class="preset-chip" data-lat="51.5033" data-lon="-0.1195" data-name="London Eye">London Eye</button>
-          <button type="button" class="preset-chip" data-lat="51.5081" data-lon="-0.0759" data-name="Tower of London">Tower Bridge</button>
-          <button type="button" class="preset-chip" data-lat="40.7128" data-lon="-74.0060" data-name="New York">New York</button>
-          <button type="button" class="preset-chip" data-lat="48.8566" data-lon="2.3522" data-name="Paris">Paris</button>
+          <button type="button" class="preset-chip chip-search-dest" data-lat="51.5074" data-lon="-0.1278" data-name="London">London</button>
+          <button type="button" class="preset-chip chip-search-dest" data-lat="51.5007" data-lon="-0.1246" data-name="Big Ben">Big Ben</button>
+          <button type="button" class="preset-chip chip-search-dest" data-lat="51.5033" data-lon="-0.1195" data-name="London Eye">London Eye</button>
+          <button type="button" class="preset-chip chip-search-dest" data-lat="51.5081" data-lon="-0.0759" data-name="Tower Bridge">Tower Br.</button>
+          <button type="button" class="preset-chip chip-search-dest" data-lat="40.7128" data-lon="-74.0060" data-name="New York">New York</button>
+          <button type="button" class="preset-chip chip-search-dest" data-lat="48.8566" data-lon="2.3522" data-name="Paris">Paris</button>
         </div>
 
-        <button type="button" class="action-btn secondary" id="btn-goto-route-from-search" style="margin-top: 4px;">&rarr; Open Route Planner [9]</button>
+        <button type="button" class="action-btn secondary" id="btn-goto-route-from-search" style="margin-top: 3px;">&rarr; Open Route Planner [9]</button>
 
         <div id="search-status" style="font-size: 9px; color: #aaa; margin-top: 3px;">Press [Enter] to submit search.</div>
-        <div id="search-results-box" class="search-results-list"></div>
+        <div id="search-results-box"></div>
       </div>
     </div>
 
@@ -551,25 +566,25 @@
             <span class="detail-label">Zoom Level:</span>
             <span class="detail-value" id="detail-zoom">13</span>
           </div>
-          <div class="detail-row" style="flex-direction: column; gap: 2px; margin-top: 3px;">
+          <div class="detail-row" style="flex-direction: column; gap: 2px; margin-top: 2px;">
             <span class="detail-label">Address / Place:</span>
             <span class="detail-value" id="detail-address" style="color: #80deea; font-size: 9px; font-family: sans-serif;">Resolving address...</span>
           </div>
         </div>
 
         <div class="quick-list-title">Set as Route Waypoint:</div>
-        <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+        <div style="display: flex; gap: 4px; margin-bottom: 5px;">
           <button type="button" class="action-btn" id="btn-set-pin-a" style="background: #00796b;">Set as FROM (A)</button>
           <button type="button" class="action-btn" id="btn-set-pin-b" style="background: #c2185b;">Set as TO (B)</button>
         </div>
 
-        <button type="button" class="action-btn" id="btn-calc-route-from-details" style="background: #0288d1; margin-bottom: 6px;">Get Route A &rarr; B</button>
+        <button type="button" class="action-btn" id="btn-calc-route-from-details" style="background: #0288d1; margin-bottom: 4px;">Get Route A &rarr; B</button>
 
         <div class="quick-list-title">Keypad Shortcuts:</div>
         <table class="nav-guide-table">
           <tr><td class="key-col">D-Pad</td><td>Pan Map (40px)</td></tr>
           <tr><td class="key-col">Key 1 / 3</td><td>Zoom In / Out</td></tr>
-          <tr><td class="key-col">Key 5</td><td>Details / Waypoints</td></tr>
+          <tr><td class="key-col">Key 5</td><td>Details / Set A or B</td></tr>
           <tr><td class="key-col">Key 7</td><td>Search Location</td></tr>
           <tr><td class="key-col">Key 9</td><td>To/From Route Planner</td></tr>
           <tr><td class="key-col">Key 0</td><td>Reset / Clear</td></tr>
@@ -585,25 +600,35 @@
       </div>
       <div class="overlay-content">
         
-        <!-- From (A) Point Selection -->
-        <div style="margin-bottom: 4px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
+        <!-- From (A) Point Section -->
+        <div class="waypoint-box box-a">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
             <span style="font-weight: bold; color: #00e676; font-size: 10px;">FROM (Start A):</span>
-            <button type="button" id="btn-use-crosshair-a" class="preset-chip" style="color:#00e676;">Use Crosshair</button>
+            <button type="button" id="btn-use-crosshair-a" class="preset-chip" style="color:#00e676; border-color:#00e676; font-weight:bold;">&#9678; Crosshair [1]</button>
           </div>
-          <input type="text" id="route-from-input" class="input-field" placeholder="Origin (e.g. London)" />
+          <input type="text" id="route-from-input" class="input-field" placeholder="Enter origin or tap Crosshair" />
+          <div class="preset-chip-list" style="margin-bottom: 0;">
+            <button type="button" class="preset-chip chip-preset-a" data-lat="51.5074" data-lon="-0.1278" data-name="London">London</button>
+            <button type="button" class="preset-chip chip-preset-a" data-lat="51.5007" data-lon="-0.1246" data-name="Westminster">Westminster</button>
+            <button type="button" class="preset-chip chip-preset-a" data-lat="51.5155" data-lon="-0.1419" data-name="Oxford Circus">Oxford St</button>
+          </div>
         </div>
 
-        <!-- To (B) Point Selection -->
-        <div style="margin-bottom: 5px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
-            <span style="font-weight: bold; color: #ff5252; font-size: 10px;">TO (Destination B):</span>
-            <button type="button" id="btn-use-crosshair-b" class="preset-chip" style="color:#ff5252;">Use Crosshair</button>
+        <!-- To (B) Point Section -->
+        <div class="waypoint-box box-b">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <span style="font-weight: bold; color: #ff5252; font-size: 10px;">TO (Dest B):</span>
+            <button type="button" id="btn-use-crosshair-b" class="preset-chip" style="color:#ff5252; border-color:#ff5252; font-weight:bold;">&#9678; Crosshair [2]</button>
           </div>
-          <input type="text" id="route-to-input" class="input-field" placeholder="Destination (e.g. Big Ben)" />
+          <input type="text" id="route-to-input" class="input-field" placeholder="Enter destination or tap Crosshair" />
+          <div class="preset-chip-list" style="margin-bottom: 0;">
+            <button type="button" class="preset-chip chip-preset-b" data-lat="51.5007" data-lon="-0.1246" data-name="Big Ben">Big Ben</button>
+            <button type="button" class="preset-chip chip-preset-b" data-lat="51.5081" data-lon="-0.0759" data-name="Tower Bridge">Tower Br.</button>
+            <button type="button" class="preset-chip chip-preset-b" data-lat="51.5033" data-lon="-0.1195" data-name="London Eye">Eye</button>
+          </div>
         </div>
 
-        <div style="display: flex; gap: 4px; margin-bottom: 5px;">
+        <div style="display: flex; gap: 4px; margin-bottom: 4px;">
           <button type="button" class="action-btn" id="btn-find-routes" style="flex: 2;">Find Routes [Enter]</button>
           <button type="button" class="action-btn secondary" id="btn-swap-waypoints" style="flex: 1;" title="Swap A and B">&#8646; Swap</button>
         </div>
@@ -630,12 +655,12 @@
           </div>
 
           <button type="button" class="action-btn secondary" id="btn-toggle-steps">Show Turn Steps &darr;</button>
-          <div id="route-steps-box" style="display: none; margin-top: 4px; max-height: 85px; overflow-y: auto;"></div>
+          <div id="route-steps-box" style="display: none; margin-top: 3px; max-height: 80px; overflow-y: auto;"></div>
 
-          <button type="button" class="action-btn danger" id="btn-clear-route" style="margin-top: 4px;">Clear Route</button>
+          <button type="button" class="action-btn danger" id="btn-clear-route" style="margin-top: 3px;">Clear Route</button>
         </div>
 
-        <div id="route-status" style="font-size: 9px; color: #888; margin-top: 4px;">Enter origin & destination, or tap 'Use Crosshair'</div>
+        <div id="route-status" style="font-size: 9px; color: #aaa; margin-top: 2px;">Tip: Press 1 to set A to crosshair, 2 for B.</div>
       </div>
     </div>
 
@@ -729,10 +754,20 @@
       let toastTimer = null;
       let activePlaceName = "";
 
-      // 2. Initialize Leaflet Map strictly optimized for 240x280 Canvas
+      // 2. Initialize Leaflet Map strictly optimized for 240x280 QVGA Canvas
+      // PERFORMANCE OVERHAUL:
+      // - preferCanvas: true -> vector rendering without SVG DOM thrashing
+      // - zoomAnimation & fadeAnimation: false -> instantaneous rendering without frame encodes
+      // - maxBounds: prevents panning into NaN / Mercator singularities
       const map = L.map('map', {
         center: [DEFAULT_LAT, DEFAULT_LON],
         zoom: DEFAULT_ZOOM,
+        preferCanvas: true,
+        zoomAnimation: false,
+        fadeAnimation: false,
+        markerZoomAnimation: false,
+        maxBounds: [[-85.0511, -180], [85.0511, 180]],
+        maxBoundsViscosity: 0.6,
         zoomControl: false,
         attributionControl: false,
         dragging: false,
@@ -743,24 +778,67 @@
         keyboard: false
       });
 
-      // OpenStreetMap Tile Layer
+      // OpenStreetMap Tile Layer:
+      // - updateWhenIdle: false (CRITICAL: never wait for idle to load tiles while moving!)
+      // - keepBuffer: 6 (caches 6 tiles in all directions so panning never hits blank gray areas)
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         minZoom: 2,
-        updateWhenIdle: true,
-        keepBuffer: 2
+        updateWhenIdle: false,
+        updateWhenZooming: false,
+        updateInterval: 50,
+        keepBuffer: 6,
+        bounds: [[-85.0511, -180], [85.0511, 180]]
       }).addTo(map);
 
       // Force accurate dimensions calculation in CloudMosa headless browser
       setTimeout(function () {
         map.invalidateSize();
-      }, 150);
+      }, 120);
 
-      // Helper: Format coordinates
+      // Helper: Format coordinates with boundary safety (guarantees no NaN crash)
       function formatCoords(lat, lon) {
+        if (typeof lat !== 'number' || isNaN(lat) || typeof lon !== 'number' || isNaN(lon)) {
+          return "0.0000°N, 0.0000°E";
+        }
+        // Normalize lon to -180..+180
+        lon = ((lon + 180) % 360 + 360) % 360 - 180;
+        // Clamp lat to Web Mercator range
+        lat = Math.max(-85.0511, Math.min(85.0511, lat));
+
         const latStr = Math.abs(lat).toFixed(4) + (lat >= 0 ? '°N' : '°S');
         const lonStr = Math.abs(lon).toFixed(4) + (lon >= 0 ? '°E' : '°W');
         return latStr + ', ' + lonStr;
+      }
+
+      // Robust coordinate parser
+      function parseCoordinateString(str) {
+        if (!str || typeof str !== 'string') return null;
+        str = str.trim();
+
+        // 1. Degree notation: "51.5074°N, 0.1278°W" or "51.5074 N, 0.1278 W"
+        const degMatch = str.match(/([0-9.]+)\s*°?\s*([NSns])\s*[,;\s]+\s*([0-9.]+)\s*°?\s*([EWew])/);
+        if (degMatch) {
+          let lat = parseFloat(degMatch[1]);
+          let lon = parseFloat(degMatch[3]);
+          if (degMatch[2].toUpperCase() === 'S') lat = -lat;
+          if (degMatch[4].toUpperCase() === 'W') lon = -lon;
+          if (!isNaN(lat) && !isNaN(lon)) {
+            return { lat: lat, lon: lon };
+          }
+        }
+
+        // 2. Plain decimal format: "51.5074, -0.1278" or "51.5074 -0.1278"
+        const plainMatch = str.match(/^([-+]?[0-9]*\.?[0-9]+)\s*[,;\s]+\s*([-+]?[0-9]*\.?[0-9]+)$/);
+        if (plainMatch) {
+          const lat = parseFloat(plainMatch[1]);
+          const lon = parseFloat(plainMatch[2]);
+          if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+            return { lat: lat, lon: lon };
+          }
+        }
+
+        return null;
       }
 
       // Show brief on-screen toast
@@ -770,10 +848,11 @@
         toastEl.classList.add('show');
         toastTimer = setTimeout(function () {
           toastEl.classList.remove('show');
-        }, 1700);
+        }, 1400);
       }
 
-      // Update Top Bar Indicators
+      // RAF-Throttled Top Bar Updater (prevents string layout thrashing during pan)
+      let headerUpdateRaf = null;
       function updateHeaderInfo() {
         const center = map.getCenter();
         const zoom = map.getZoom();
@@ -785,17 +864,46 @@
         }
       }
 
-      // Map event listeners
+      function scheduleHeaderUpdate() {
+        if (!headerUpdateRaf) {
+          headerUpdateRaf = requestAnimationFrame(function () {
+            updateHeaderInfo();
+            headerUpdateRaf = null;
+          });
+        }
+      }
+
       map.on('move', function () {
         activePlaceName = "";
-        updateHeaderInfo();
+        scheduleHeaderUpdate();
       });
 
       map.on('zoomend', function () {
-        updateHeaderInfo();
+        scheduleHeaderUpdate();
       });
 
       updateHeaderInfo();
+
+      // HIGH PERFORMANCE RAF PAN COALESCING
+      // If arrow keys repeat quickly on keypad phone, coalesces into single RAF frame
+      let pendingPanX = 0;
+      let pendingPanY = 0;
+      let panRafId = null;
+
+      function smoothPanBy(dx, dy) {
+        pendingPanX += dx;
+        pendingPanY += dy;
+        if (!panRafId) {
+          panRafId = requestAnimationFrame(function () {
+            if (pendingPanX !== 0 || pendingPanY !== 0) {
+              map.panBy([pendingPanX, pendingPanY], { animate: false });
+              pendingPanX = 0;
+              pendingPanY = 0;
+            }
+            panRafId = null;
+          });
+        }
+      }
 
       // 3. Pin & Waypoint Marker Management
       function createDivIcon(text, className) {
@@ -820,7 +928,7 @@
       }
 
       function updateWaypointMarkers() {
-        if (waypointA) {
+        if (waypointA && typeof waypointA.lat === 'number') {
           if (!markerA) {
             markerA = L.marker([waypointA.lat, waypointA.lon], {
               icon: createDivIcon('A', 'pin-a'),
@@ -834,7 +942,7 @@
           markerA = null;
         }
 
-        if (waypointB) {
+        if (waypointB && typeof waypointB.lat === 'number') {
           if (!markerB) {
             markerB = L.marker([waypointB.lat, waypointB.lon], {
               icon: createDivIcon('B', 'pin-b'),
@@ -848,6 +956,8 @@
           markerB = null;
         }
       }
+
+      updateWaypointMarkers();
 
       // Reverse Geocoding with OpenStreetMap Nominatim
       function fetchAddressDetails(lat, lon, callback) {
@@ -875,9 +985,10 @@
         searchModal.classList.remove('active');
         detailsModal.classList.remove('active');
         routeModal.classList.remove('active');
-        searchInput.blur();
-        routeFromInput.blur();
-        routeToInput.blur();
+        // Aggressively clear focus to prevent keypad lockups
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
         window.focus();
       }
 
@@ -904,32 +1015,31 @@
         searchStatus.textContent = 'Type location and press [Enter]';
         setTimeout(function () {
           searchInput.focus();
-        }, 80);
+        }, 60);
       }
 
       function openRouteModal() {
         closeAllModals();
         routeModal.classList.add('active');
 
-        // Populate inputs if values exist
-        if (waypointA) {
-          routeFromInput.value = waypointA.name || formatCoords(waypointA.lat, waypointA.lon);
-        } else {
+        // Ensure A is always available
+        if (!waypointA) {
           const center = map.getCenter();
-          routeFromInput.value = formatCoords(center.lat, center.lng);
+          waypointA = { lat: center.lat, lon: center.lng, name: formatCoords(center.lat, center.lng) };
         }
+        routeFromInput.value = waypointA.name || formatCoords(waypointA.lat, waypointA.lon);
 
         if (waypointB) {
           routeToInput.value = waypointB.name || formatCoords(waypointB.lat, waypointB.lon);
         }
 
+        updateWaypointMarkers();
+
+        // Focus FROM (A) first
         setTimeout(function () {
-          if (!routeToInput.value) {
-            routeToInput.focus();
-          } else {
-            routeFromInput.focus();
-          }
-        }, 80);
+          routeFromInput.focus();
+          routeFromInput.select();
+        }, 60);
       }
 
       // Jump to coordinates
@@ -941,23 +1051,40 @@
         closeAllModals();
       }
 
-      // 5. Geocoding & Waypoint assignment
-      function resolveLocationQuery(query, callback) {
+      // 5. Geocoding & Waypoint Resolution
+      function resolveLocationQuery(query, existingWaypoint, callback) {
         if (!query || !query.trim()) {
           callback(null);
           return;
         }
-        // Check if query is lat,lon formatted
-        const match = query.match(/^([-+]?\d{1,2}(?:\.\d+)?)[,\s]+([-+]?\d{1,3}(?:\.\d+)?)$/);
-        if (match) {
+        query = query.trim();
+
+        // Check 1: Existing waypoint match
+        if (existingWaypoint && (
+          query === existingWaypoint.name ||
+          query === formatCoords(existingWaypoint.lat, existingWaypoint.lon) ||
+          query.indexOf(existingWaypoint.lat.toFixed(3)) !== -1
+        )) {
           callback({
-            lat: parseFloat(match[1]),
-            lon: parseFloat(match[2]),
-            name: formatCoords(parseFloat(match[1]), parseFloat(match[2]))
+            lat: existingWaypoint.lat,
+            lon: existingWaypoint.lon,
+            name: existingWaypoint.name || formatCoords(existingWaypoint.lat, existingWaypoint.lon)
           });
           return;
         }
 
+        // Check 2: Direct coordinate parsing
+        const parsed = parseCoordinateString(query);
+        if (parsed) {
+          callback({
+            lat: parsed.lat,
+            lon: parsed.lon,
+            name: formatCoords(parsed.lat, parsed.lon)
+          });
+          return;
+        }
+
+        // Check 3: Query OpenStreetMap Nominatim
         const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query);
         fetch(url)
           .then(function (res) { return res.json(); })
@@ -977,7 +1104,7 @@
           });
       }
 
-      // Search dialog search execution
+      // Search dialog execution
       function executeSearch() {
         const query = searchInput.value.trim();
         if (!query) return;
@@ -998,11 +1125,17 @@
             data.forEach(function (item) {
               const btn = document.createElement('div');
               btn.className = 'result-item';
+              btn.tabIndex = 0;
               btn.textContent = item.display_name.split(',').slice(0, 3).join(',');
               btn.onclick = function () {
                 const lat = parseFloat(item.lat);
                 const lon = parseFloat(item.lon);
                 jumpToLocation(lat, lon, item.name || query);
+              };
+              btn.onkeydown = function (e) {
+                if (e.key === 'Enter') {
+                  btn.onclick();
+                }
               };
               searchResultsBox.appendChild(btn);
             });
@@ -1018,31 +1151,29 @@
 
       searchSubmitBtn.addEventListener('click', executeSearch);
 
-      // Preset quick jump chips
-      document.querySelectorAll('.preset-chip').forEach(function (chip) {
-        if (chip.getAttribute('data-lat')) {
-          chip.addEventListener('click', function () {
-            const lat = parseFloat(chip.getAttribute('data-lat'));
-            const lon = parseFloat(chip.getAttribute('data-lon'));
-            const name = chip.getAttribute('data-name');
-            jumpToLocation(lat, lon, name);
-          });
-        }
+      // Search dialog preset buttons
+      document.querySelectorAll('.chip-search-dest').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          const lat = parseFloat(chip.getAttribute('data-lat'));
+          const lon = parseFloat(chip.getAttribute('data-lon'));
+          const name = chip.getAttribute('data-name');
+          jumpToLocation(lat, lon, name);
+        });
       });
 
       // Location details waypoint buttons
       btnSetPinA.addEventListener('click', function () {
         const center = map.getCenter();
-        waypointA = { lat: center.lat, lon: center.lng, name: activePlaceName || "Point A" };
+        waypointA = { lat: center.lat, lon: center.lng, name: activePlaceName || formatCoords(center.lat, center.lng) };
         updateWaypointMarkers();
-        showToast('Set as Origin (A)');
+        showToast('Start (A) Set to Pin');
       });
 
       btnSetPinB.addEventListener('click', function () {
         const center = map.getCenter();
-        waypointB = { lat: center.lat, lon: center.lng, name: activePlaceName || "Point B" };
+        waypointB = { lat: center.lat, lon: center.lng, name: activePlaceName || formatCoords(center.lat, center.lng) };
         updateWaypointMarkers();
-        showToast('Set as Destination (B)');
+        showToast('Dest (B) Set to Pin');
       });
 
       btnCalcRouteFromDetails.addEventListener('click', function () {
@@ -1051,7 +1182,7 @@
           waypointA = { lat: center.lat, lon: center.lng, name: "Point A" };
         }
         if (!waypointB) {
-          showToast('Select or set Destination (B)');
+          showToast('Select Destination (B)');
           openRouteModal();
           return;
         }
@@ -1059,23 +1190,61 @@
         requestRouteCalculation();
       });
 
-      // Route dialog waypoint pickers
-      btnUseCrosshairA.addEventListener('click', function () {
+      // --- ROUTE PLANNER: SETTING A & B ---
+      function setPointAToCrosshair() {
         const center = map.getCenter();
-        waypointA = { lat: center.lat, lon: center.lng, name: formatCoords(center.lat, center.lng) };
+        waypointA = {
+          lat: center.lat,
+          lon: center.lng,
+          name: formatCoords(center.lat, center.lng)
+        };
         routeFromInput.value = waypointA.name;
         updateWaypointMarkers();
-        showToast('Origin (A) Set to Crosshair');
-      });
+        showToast('Start (A) Set to Crosshair');
+      }
 
-      btnUseCrosshairB.addEventListener('click', function () {
+      function setPointBToCrosshair() {
         const center = map.getCenter();
-        waypointB = { lat: center.lat, lon: center.lng, name: formatCoords(center.lat, center.lng) };
+        waypointB = {
+          lat: center.lat,
+          lon: center.lng,
+          name: formatCoords(center.lat, center.lng)
+        };
         routeToInput.value = waypointB.name;
         updateWaypointMarkers();
-        showToast('Destination (B) Set to Crosshair');
+        showToast('Dest (B) Set to Crosshair');
+      }
+
+      btnUseCrosshairA.addEventListener('click', setPointAToCrosshair);
+      btnUseCrosshairB.addEventListener('click', setPointBToCrosshair);
+
+      // Presets for A
+      document.querySelectorAll('.chip-preset-a').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          const lat = parseFloat(chip.getAttribute('data-lat'));
+          const lon = parseFloat(chip.getAttribute('data-lon'));
+          const name = chip.getAttribute('data-name');
+          waypointA = { lat: lat, lon: lon, name: name };
+          routeFromInput.value = name;
+          updateWaypointMarkers();
+          showToast('Start (A): ' + name);
+        });
       });
 
+      // Presets for B
+      document.querySelectorAll('.chip-preset-b').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          const lat = parseFloat(chip.getAttribute('data-lat'));
+          const lon = parseFloat(chip.getAttribute('data-lon'));
+          const name = chip.getAttribute('data-name');
+          waypointB = { lat: lat, lon: lon, name: name };
+          routeToInput.value = name;
+          updateWaypointMarkers();
+          showToast('Dest (B): ' + name);
+        });
+      });
+
+      // Swap waypoints
       btnSwapWaypoints.addEventListener('click', function () {
         const temp = waypointA;
         waypointA = waypointB;
@@ -1084,6 +1253,7 @@
         routeFromInput.value = routeToInput.value;
         routeToInput.value = tempVal;
         updateWaypointMarkers();
+        showToast('Swapped A and B');
         if (waypointA && waypointB) {
           requestRouteCalculation();
         }
@@ -1124,7 +1294,7 @@
         return Math.max(1, Math.round(seconds / 60)) + ' min';
       }
 
-      // Render the selected route polyline and update UI
+      // Render selected route polyline
       function selectRoute(index) {
         selectedRouteIndex = index;
         const route = currentRoutesData[index];
@@ -1154,11 +1324,11 @@
         routePillSummary.textContent = distStr + ' (' + timeStr + ')';
         activeRoutePill.classList.add('show');
 
-        // Draw Polylines: primary route in bright cyan/blue, alternative routes in muted gray
+        // Draw Polylines (using canvas renderer)
         activeRouteLines.forEach(function (l) { map.removeLayer(l); });
         activeRouteLines = [];
 
-        // Draw alternative routes underneath in muted style
+        // Draw alternative routes in muted dashed style
         currentRoutesData.forEach(function (altRoute, altIdx) {
           if (altIdx !== index && altRoute.geometry && altRoute.geometry.coordinates) {
             const altLatLngs = altRoute.geometry.coordinates.map(function (c) {
@@ -1174,7 +1344,7 @@
           }
         });
 
-        // Draw the selected active route with dual-layer high contrast
+        // Draw primary active route
         if (route.geometry && route.geometry.coordinates) {
           const latLngs = route.geometry.coordinates.map(function (c) {
             return [c[1], c[0]];
@@ -1197,11 +1367,14 @@
           activeRouteLines.push(borderLine);
           activeRouteLines.push(coreLine);
 
-          // Fit bounds to fit the route on the 240x280 screen
-          map.fitBounds(coreLine.getBounds(), {
-            padding: [22, 22],
-            animate: false
-          });
+          // Safe bounds framing
+          const bounds = coreLine.getBounds();
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, {
+              padding: [20, 20],
+              animate: false
+            });
+          }
         }
 
         // Populate Turn Steps
@@ -1210,7 +1383,7 @@
           route.legs[0].steps.forEach(function (step, sIdx) {
             const stepRow = document.createElement('div');
             stepRow.className = 'step-item';
-            const instruction = step.maneuver.type + (step.name ? ' on ' + step.name : '');
+            const instruction = (step.maneuver.type || 'Proceed') + (step.name ? ' on ' + step.name : '');
             stepRow.innerHTML = '<span class="step-num">' + (sIdx + 1) + '.</span>' +
               '<span class="step-text">' + instruction + '</span>' +
               '<span class="step-dist">' + formatDistance(step.distance) + '</span>';
@@ -1222,7 +1395,7 @@
         }
       }
 
-      // Straight-line Fallback (Haversine) if routing server is unreachable
+      // Straight-line Fallback (Haversine)
       function drawStraightLineFallback(p1, p2) {
         const R = 6371e3; // Earth radius in meters
         const rad1 = p1.lat * Math.PI / 180;
@@ -1254,38 +1427,39 @@
 
       // Fetch routes from OSRM
       function requestRouteCalculation() {
-        routeStatus.textContent = 'Resolving locations...';
+        routeStatus.textContent = 'Resolving points...';
 
         const fromQuery = routeFromInput.value.trim();
         const toQuery = routeToInput.value.trim();
 
         if (!fromQuery || !toQuery) {
-          routeStatus.textContent = 'Please enter both From and To points.';
+          routeStatus.textContent = 'Enter both Origin (A) and Dest (B).';
           showToast('Missing From or To');
           return;
         }
 
-        resolveLocationQuery(fromQuery, function (locA) {
+        resolveLocationQuery(fromQuery, waypointA, function (locA) {
           if (!locA) {
-            routeStatus.textContent = 'Could not find origin location.';
-            showToast('Origin not found');
+            routeStatus.textContent = 'Could not find Origin (A). Tap Crosshair.';
+            showToast('Origin (A) not found');
             return;
           }
           waypointA = locA;
+          routeFromInput.value = locA.name;
           updateWaypointMarkers();
 
-          resolveLocationQuery(toQuery, function (locB) {
+          resolveLocationQuery(toQuery, waypointB, function (locB) {
             if (!locB) {
-              routeStatus.textContent = 'Could not find destination.';
-              showToast('Destination not found');
+              routeStatus.textContent = 'Could not find Destination (B).';
+              showToast('Dest (B) not found');
               return;
             }
             waypointB = locB;
+            routeToInput.value = locB.name;
             updateWaypointMarkers();
 
             routeStatus.textContent = 'Calculating possible routes...';
 
-            // OSRM Public Routing API with alternatives=true and geometries=geojson
             const osrmUrl = 'https://router.project-osrm.org/route/v1/driving/' +
               waypointA.lon + ',' + waypointA.lat + ';' +
               waypointB.lon + ',' + waypointB.lat +
@@ -1298,7 +1472,6 @@
                   currentRoutesData = data.routes;
                   routeStatus.textContent = 'Found ' + data.routes.length + ' possible route(s).';
 
-                  // Build Route Selector Tabs
                   routeTabsBar.innerHTML = '';
                   data.routes.forEach(function (r, idx) {
                     const tabBtn = document.createElement('button');
@@ -1316,17 +1489,15 @@
                   showToast('Route Ready (' + data.routes.length + ' found)');
                   setTimeout(function () {
                     closeAllModals();
-                  }, 800);
+                  }, 600);
                 } else {
-                  // Fall back to direct line
                   drawStraightLineFallback(waypointA, waypointB);
-                  setTimeout(function () { closeAllModals(); }, 800);
+                  setTimeout(function () { closeAllModals(); }, 600);
                 }
               })
               .catch(function () {
-                // If offline / network error, use straight line connection
                 drawStraightLineFallback(waypointA, waypointB);
-                setTimeout(function () { closeAllModals(); }, 800);
+                setTimeout(function () { closeAllModals(); }, 600);
               });
           });
         });
@@ -1353,6 +1524,28 @@
         showToast('Reset to Default');
       }
 
+      // Helper: Modal D-pad focus navigation
+      function navigateModalFocus(modal, direction) {
+        const focusable = Array.from(modal.querySelectorAll(
+          'input:not([disabled]), button:not([disabled]), [tabindex="0"]'
+        )).filter(function (el) {
+          return el.offsetParent !== null;
+        });
+        if (focusable.length === 0) return;
+
+        const currentIdx = focusable.indexOf(document.activeElement);
+        let nextIdx;
+        if (direction === 'down') {
+          nextIdx = (currentIdx + 1) % focusable.length;
+        } else {
+          nextIdx = (currentIdx - 1 + focusable.length) % focusable.length;
+        }
+        focusable[nextIdx].focus();
+        if (focusable[nextIdx].select) {
+          focusable[nextIdx].select();
+        }
+      }
+
       // 7. KEYPAD & D-PAD NAVIGATION ENGINE
       window.addEventListener('keydown', function (e) {
         const key = e.key;
@@ -1360,6 +1553,8 @@
         const isSearchOpen = searchModal.classList.contains('active');
         const isDetailsOpen = detailsModal.classList.contains('active');
         const isRouteOpen = routeModal.classList.contains('active');
+        const isModalOpen = (isSearchOpen || isDetailsOpen || isRouteOpen);
+        const activeModal = isSearchOpen ? searchModal : (isRouteOpen ? routeModal : detailsModal);
         const isInputFocused = (
           document.activeElement === searchInput ||
           document.activeElement === routeFromInput ||
@@ -1368,6 +1563,7 @@
 
         // Key identification (normalizes strings, keyCodes, numpad codes)
         const isKey1 = (key === '1' || code === 49 || code === 97);
+        const isKey2 = (key === '2' || code === 50 || code === 98);
         const isKey3 = (key === '3' || code === 51 || code === 99);
         const isKey5 = (key === '5' || code === 53 || code === 101);
         const isKey7 = (key === '7' || code === 55 || code === 103);
@@ -1381,9 +1577,9 @@
         const isLeft = (key === 'ArrowLeft' || key === 'Left' || code === 37);
         const isRight = (key === 'ArrowRight' || key === 'Right' || code === 39);
 
-        // Handle Escape / SoftRight / RSK / Back
+        // Escape / SoftRight / RSK / Back
         if (isSoftRight || (key === 'Backspace' && !isInputFocused)) {
-          if (isSearchOpen || isDetailsOpen || isRouteOpen) {
+          if (isModalOpen) {
             e.preventDefault();
             closeAllModals();
             return;
@@ -1402,116 +1598,135 @@
           }
         }
 
-        // When typing in text input fields
-        if (isInputFocused) {
-          if (isEnter) {
+        // When a modal is open: D-Pad Up / Down moves focus through every input and button
+        if (isModalOpen) {
+          if (isDown) {
             e.preventDefault();
-            if (isSearchOpen) {
-              executeSearch();
-            } else if (isRouteOpen) {
-              requestRouteCalculation();
+            navigateModalFocus(activeModal, 'down');
+            return;
+          }
+          if (isUp) {
+            e.preventDefault();
+            navigateModalFocus(activeModal, 'up');
+            return;
+          }
+
+          // Shortcuts inside Route Planner
+          if (isRouteOpen) {
+            if (isKey1 && !isInputFocused) {
+              e.preventDefault();
+              setPointAToCrosshair();
+              return;
+            }
+            if (isKey2 && !isInputFocused) {
+              e.preventDefault();
+              setPointBToCrosshair();
+              return;
             }
           }
+
+          // Enter key behavior
+          if (isEnter) {
+            if (isInputFocused) {
+              e.preventDefault();
+              if (isSearchOpen) {
+                executeSearch();
+              } else if (isRouteOpen) {
+                requestRouteCalculation();
+              }
+              return;
+            } else if (document.activeElement && document.activeElement.click) {
+              e.preventDefault();
+              document.activeElement.click();
+              return;
+            }
+          }
+
+          // Soft Left Key inside modal toggles search
+          if (isSoftLeft || (isKey7 && !isInputFocused)) {
+            e.preventDefault();
+            if (isSearchOpen) {
+              closeAllModals();
+            } else {
+              openSearchModal();
+            }
+            return;
+          }
+
+          // Key 9 toggles Route Planner
+          if (isKey9 && !isInputFocused) {
+            e.preventDefault();
+            closeAllModals();
+            return;
+          }
+
           return;
         }
+
+        // --- MAP NAVIGATION (No modal open) ---
 
         // Soft Left Key (F1 or Key 7)
         if (isSoftLeft) {
           e.preventDefault();
-          if (isSearchOpen) {
-            closeAllModals();
-          } else {
-            openSearchModal();
-          }
+          openSearchModal();
           return;
         }
 
-        // Prevent default browser viewport scrolling on D-Pad Arrow keys
+        // High performance D-Pad Arrow keys: batched via RAF to eliminate input delay
         if (isUp || isDown || isLeft || isRight) {
           e.preventDefault();
-          if (isSearchOpen || isDetailsOpen || isRouteOpen) return;
-
           if (isUp) {
-            map.panBy([0, -PAN_STEP], { animate: false }); // Pan North 40px
+            smoothPanBy(0, -PAN_STEP); // Pan North 40px
           } else if (isDown) {
-            map.panBy([0, PAN_STEP], { animate: false });  // Pan South 40px
+            smoothPanBy(0, PAN_STEP);  // Pan South 40px
           } else if (isLeft) {
-            map.panBy([-PAN_STEP, 0], { animate: false }); // Pan West 40px
+            smoothPanBy(-PAN_STEP, 0); // Pan West 40px
           } else if (isRight) {
-            map.panBy([PAN_STEP, 0], { animate: false });  // Pan East 40px
+            smoothPanBy(PAN_STEP, 0);  // Pan East 40px
           }
           return;
         }
 
-        // Key '1': Zoom in
+        // Key '1': Instant Zoom in (zero animation delay)
         if (isKey1) {
           e.preventDefault();
-          if (isSearchOpen || isDetailsOpen || isRouteOpen) return;
           map.zoomIn();
           showToast('Zoom: ' + map.getZoom());
           return;
         }
 
-        // Key '3': Zoom out
+        // Key '3': Instant Zoom out (zero animation delay)
         if (isKey3) {
           e.preventDefault();
-          if (isSearchOpen || isDetailsOpen || isRouteOpen) return;
           map.zoomOut();
           showToast('Zoom: ' + map.getZoom());
           return;
         }
 
         // Key '5' or 'Enter': Location details / Pin
-        if (isKey5) {
+        if (isKey5 || isEnter) {
           e.preventDefault();
-          if (isDetailsOpen) {
-            closeAllModals();
-          } else {
-            openDetailsModal();
-          }
-          return;
-        }
-
-        if (isEnter) {
-          e.preventDefault();
-          if (isSearchOpen) {
-            executeSearch();
-          } else if (isRouteOpen) {
-            requestRouteCalculation();
-          } else if (isDetailsOpen) {
-            closeAllModals();
-          } else {
-            openDetailsModal();
-          }
+          openDetailsModal();
           return;
         }
 
         // Key '7': Search modal toggle
         if (isKey7) {
           e.preventDefault();
-          if (isSearchOpen) {
-            closeAllModals();
-          } else {
-            openSearchModal();
-          }
+          openSearchModal();
           return;
         }
 
         // Key '9': Route planner modal toggle
         if (isKey9) {
           e.preventDefault();
-          if (isRouteOpen) {
-            closeAllModals();
-          } else {
-            openRouteModal();
-          }
+          openRouteModal();
           return;
         }
 
         // Key '0': Reset map or clear
         if (isKey0) {
           e.preventDefault();
-          closeAllModals();
           resetToDefault();
           return;
         }
